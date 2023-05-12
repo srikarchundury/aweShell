@@ -1,4 +1,4 @@
 all:
-	gcc -g phase3.c -o aweShell
+	gcc -g aweShell.c -o aweShell
 clean: 
 	rm aweShell

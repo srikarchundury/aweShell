@@ -1,0 +1,26 @@
+ls
+cat
+ls
+ls
+ls
+l
+s
+ls
+ls
+ls
+ll
+ll
+ls -l
+pwd
+hist
+hist
+alias
+ll
+ls -l
+cat .shell_history.txt
+hist
+hist
+cat .shell_history.txt | grep cat
+ll
+ls -l
+prevdir

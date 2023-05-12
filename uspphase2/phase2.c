@@ -216,7 +216,7 @@ void do_func(){
 	if( strcmp(p_input,"piped") ==0 ){
 		pip_pls(list);
 	}
-	else{
+	else {
 		list = com_n_args(p_input);
 		if(strcmp(*list,"hist")==0){
 			char line[100];
@@ -229,7 +229,7 @@ void do_func(){
 			fclose(hist);
 			fclose(new);
 		}
-		if(1){
+		if(1) {
 			char line[100];
 			FILE *new = fopen("alias.txt","r");
 			while( fgets(line,100,new) !=NULL ){
@@ -242,7 +242,7 @@ void do_func(){
 				}
 				alias[q]='\0';
 				z++;
-				if( strcmp(*list,alias)==0 ){
+				if( strcmp(*list, alias)==0 ){
 					while(line[z]!='\0'){
 						actual[r++]=line[z];
 						z++;
