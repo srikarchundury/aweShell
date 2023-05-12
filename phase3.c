@@ -24,6 +24,13 @@
 #define KCYN  "\x1B[36m"
 #define KWHT  "\x1B[37m"
 
+
+#define HIST "~/.shell_history.txt"
+#define ALIAS "~/.alias.txt"
+#define PATH_MAX 1000
+
+char CWD[PATH_MAX];
+
 FILE *hist;
 int saved_stdout,saved_stdin;
 int in, out;
@@ -58,7 +65,7 @@ char *pre_process(char *inp){
 	}
 	return line;
 }
-char **com_n_args(char *inp){
+char **com_n_args(char *inp) {
 	char **res;
 	res = (char **)malloc(sizeof(char *)*ARG_MAX);
 	int k=0;
@@ -179,8 +186,9 @@ void do_func(){
 	char *input2;
 	char* input = (char *)malloc(sizeof(char)*C_MAX) ;
 	input2 = (char *)malloc(sizeof(char)*C_MAX);
-	//fgets(input2,C_MAX,0);
-	gets(input2);
+	// fgets(input2,C_MAX,0);
+	// gets(input2);
+	scanf("%s", input2);
 	if(strchr(input2,'\\') != NULL){
 		int i, j = 0;
 		int size;
@@ -204,116 +212,126 @@ void do_func(){
 	char **list = com_n_args(p_input);
 	p_input = do_pip_stuff(list);
 	if( strcmp(p_input,"piped") ==0 ){
-		hist = fopen("/home/sumanth/shell/shell_history.txt", "a");
+		hist = fopen(HIST, "a");
 		fprintf(hist,"%s\n",input);
 		fclose(hist);
 		pip_pls(list);
 	}
-		list = com_n_args(p_input);
-
-					char *line = malloc(sizeof(char)*100);
-					FILE *new = fopen("/home/sumanth/shell/alias.txt","r");
-					while( fgets(line,100,new) !=NULL ){
-						int z=0,q=0,r=0;
-						char *alias = malloc(sizeof(char)*10);
-						char *actual = malloc(sizeof(char)*100);
-						while(line[z]!=':'){
-							alias[q++]=line[z];
-							z++;
-						}
-						alias[q]='\0';
-						z++;
-						if( strcmp(*list,alias)==0 ){
-							while(line[z]!='\0'){
-								actual[r++]=line[z];
-								z++;
-							}
-							actual[r-1]='\0';
-							strcpy(input,actual);
-							p_input = pre_process(input);
-							list = com_n_args(p_input);
-						}
-					}
-					fclose(new);
-
-		if(strcmp(*list,"hist")==0){
-			char line[100];
-			FILE *new = fopen("/home/sumanth/shell/shell_history.txt","r");
-			while( fgets(line,100,new) !=NULL ){
-				printf("%s",line);
-			}
-			hist = fopen("/home/sumanth/shell/shell_history.txt", "a");
-			fprintf(hist,"hist\n");
-			fclose(hist);
-			fclose(new);
-			return;
+	list = com_n_args(p_input);
+	char *line = malloc(sizeof(char)*100);
+	FILE *new = fopen(ALIAS, "r");
+	while( fgets(line,100,new) !=NULL ) {
+		int z=0,q=0,r=0;
+		char *alias = malloc(sizeof(char)*10);
+		char *actual = malloc(sizeof(char)*100);
+		while(line[z]!=':'){
+			alias[q++]=line[z];
+			z++;
 		}
-		else if(strcmp(*list,"cd")==0){
-			cd_stack[pd] = malloc(sizeof(char *)*100);
-			getcwd(cd_stack[pd],100);
-			printf("\n---cd_stack[%d]=%s---\n",pd,cd_stack[pd]);
-			pd++;
-			chdir(list[1]);
-			hist = fopen("/home/sumanth/shell/shell_history.txt", "a");
-			fprintf(hist,"%s\n",input);
-			fclose(hist);
+		alias[q]='\0';
+		z++;
+		if( strcmp(*list,alias)==0 ) {
+			while(line[z]!='\0'){
+				actual[r++]=line[z];
+				z++;
+			}
+			actual[r-1]='\0';
+			strcpy(input,actual);
+			p_input = pre_process(input);
+			list = com_n_args(p_input);
 		}
-		else if(strcmp(*list,"weather")==0){
-			pid_t pid6;
-			system("python /home/sumanth/shell/weather.py");
-			/*if(pid6=fork()<0){
-				fprintf(stderr,"awe_shell : can't fork : %s\n",strerror(errno));
-			}
-			if(pid6==0){
-				system("python weather.py");
-			}
-			int status6;
-			if( (pid6=waitpid(pid6,&status6,0)) < 0 ){
-				fprintf(stderr,"awe_shell : waitpid error : %s\n",strerror(errno));
-			}
-			*/
-
-
+	}
+	fclose(new);
+	if(strcmp(*list, "hist")==0) {
+		char line[100];
+		FILE *new = fopen(HIST,"r");
+		while( fgets(line,100,new) !=NULL ){
+			printf("%s",line);
 		}
-		else if(strcmp(*list,"prevdir")==0){
-			chdir(cd_stack[pd-1]);
-			pd--;
-			hist = fopen("/home/sumanth/shell/shell_history.txt", "a");
-			fprintf(hist,"%s\n",input);
-			fclose(hist);
+		hist = fopen(HIST, "a");
+		fprintf(hist,"hist\n");
+		fclose(hist);
+		fclose(new);
+		return;
+	}
+	else if(strcmp(*list, "cd")==0) {
+		cd_stack[pd] = malloc(sizeof(char *)*100);
+		getcwd(cd_stack[pd],100);
+		printf("\n---cd_stack[%d]=%s---\n",pd,cd_stack[pd]);
+		pd++;
+		chdir(list[1]);
+		hist = fopen(HIST, "a");
+		fprintf(hist,"%s\n",input);
+		fclose(hist);
+	}
+	else if(strcmp(*list, "weather")==0) {
+		pid_t pid6;
+		char *str1 = "python";
+		char *sofar = (char *)malloc(sizeof(char) * (strlen(str1) + strlen(CWD) + 1));
+		strcat(sofar, str1);
+		char *str3 = "/weather.py";
+		char *python_command = (char *)malloc(sizeof(char) * (strlen(str3) + strlen(sofar) + 1));
+		strcat(python_command, sofar);
+		printf("%s\n", python_command);
+		system(python_command);
+		/*if(pid6=fork()<0){
+			fprintf(stderr,"awe_shell : can't fork : %s\n",strerror(errno));
 		}
-		else if(strcmp(*list,"alias")==0){
-			FILE *new = fopen("/home/sumanth/shell/alias.txt","a");
-			int x = 1;
-			while(list[x]!=NULL){
-				fprintf(new,"%s ",list[x]);
-				x++;
-			}
-			fprintf(new,"\n");
-			hist = fopen("/home/sumanth/shell/shell_history.txt", "a");
-			fprintf(hist,"%s\n",input);
-			fclose(hist);
-			fclose(new);
-			return;
+		if(pid6==0){
+			system("python weather.py");
 		}
-		else{
-			hist = fopen("/home/sumanth/shell/shell_history.txt", "a");
-			fprintf(hist,"%s\n",input);
-			fclose(hist);
-			if((pid=fork()) == -1){
-				fprintf(stderr,"awe_shell : can't fork : %s\n",strerror(errno));
-			}
-			else if(pid==0){
-				execvp(*list,list);
-				fprintf(stderr,"awe_shell : can't exec : %s\n",strerror(errno));
-				exit(EX_DATAERR);
-			}
-			if( (pid=waitpid(pid,&status,0)) < 0 ){
-				fprintf(stderr,"awe_shell : waitpid error : %s\n",strerror(errno));
-			}
+		int status6;
+		if( (pid6=waitpid(pid6,&status6,0)) < 0 ){
+			fprintf(stderr,"awe_shell : waitpid error : %s\n",strerror(errno));
 		}
+		*/
+	}
+	else if(strcmp(*list, "prevdir")==0) {
+		chdir(cd_stack[pd-1]);
+		pd--;
+		hist = fopen(HIST, "a");
+		fprintf(hist,"%s\n",input);
+		fclose(hist);
+	}
+	else if(strcmp(*list, "alias")==0) {
+		FILE *new = fopen(ALIAS, "a");
+		int x = 1;
+		while(list[x]!=NULL){
+			fprintf(new,"%s ",list[x]);
+			x++;
+		}
+		fprintf(new, "\n");
+		hist = fopen(HIST, "a");
+		fprintf(hist,"%s\n",input);
+		fclose(hist);
+		fclose(new);
+		return;
+	}
+	else {
+		hist = fopen(HIST, "a");
+		fprintf(hist,"%s\n",input);
+		fclose(hist);
+		if((pid=fork()) == -1) {
+			fprintf(stderr, "awe_shell : can't fork : %s\n",strerror(errno));
+		}
+		else if(pid==0) {
+			execvp(*list,list);
+			fprintf(stderr, "awe_shell : can't exec : %s\n",strerror(errno));
+			exit(EX_DATAERR);
+		}
+		if( (pid=waitpid(pid,&status,0)) < 0) {
+			fprintf(stderr, "awe_shell : waitpid error : %s\n",strerror(errno));
+		}
+	}
 }
-void main(){
+int main(){
+	if (getcwd(CWD, sizeof(CWD)) != NULL) {
+		printf("Current working dir: %s\n", CWD);
+	} else {
+		perror("getcwd() error");
+		return 1;
+	}
+
 	cd_stack = malloc(sizeof(char *)*10);
 	printf(KNRM "\n-----------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
 	printf(KYEL "\t\t\t\t\t\t\t\tWELCOME TO 'AWESOME' SHELL [PHASE - 3]\n\t\t");
@@ -337,4 +355,5 @@ void main(){
 			close(saved_stdin);
 		}
 	}
+	return 0;
 }
